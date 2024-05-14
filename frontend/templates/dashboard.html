@@ -1,0 +1,10 @@
+{% extends 'base.html' %} {% block content %}
+<div class="bg-dark">
+  <h1 class="text-danger">{{btc_balance}}</h1>
+  <h1 class="text-danger">{{eth_balance}}</h1>
+  <h1 class="text-danger">{{b3_parsed}}</h1>
+
+  {% for item in b3_parsed %}
+  <h2 class="text-danger">{{item}}</h2>
+</div>
+{% endfor %} {% endblock %}

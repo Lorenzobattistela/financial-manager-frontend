@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from .forms import CryptoAddressForm
+from .forms import DashboardForm
 from dotenv import load_dotenv
 from typing import List
 import requests
@@ -15,27 +15,26 @@ load_dotenv()
 
 def index(request):
     if request.method == 'POST':
-        form = CryptoAddressForm(request.POST, request.FILES)
+        form = DashboardForm(request.POST, request.FILES)
         if form.is_valid():
             btc_address = form.cleaned_data['btc_address']
-            print(btc_address)
             eth_address = form.cleaned_data['eth_address']
-            print(eth_address)
             b3_file = form.cleaned_data['b3_file']
-            print(b3_file) 
-            print(type(b3_file)) 
 
             btc_balance = btc(btc_address)
-            print(btc_balance)
             eth_balance = eth(eth_address)
-            print(eth_balance)
-
             b3_parsed = b3(b3_file)
-            print(b3_parsed)
-            
-            return render(request, 'error.html')
+
+            ctx = {
+                'btc_balance': btc_balance,
+                'eth_balance': eth_balance,
+                'b3_parsed': b3_parsed
+            }
+            return render(request, 'dashboard.html', ctx)
+        else:
+            return render(request, 'form.html', {'form': form, 'errors': form.errors})
         
-    form = CryptoAddressForm()
+    form = DashboardForm()
     return render(request, 'form.html', {'form': form})
 
 
