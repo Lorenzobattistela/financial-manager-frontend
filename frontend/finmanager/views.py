@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from .forms import DashboardForm
+from .models import Stock, Fii, TreasuryDirect, BitcoinAddress, EthereumAddress
 from dotenv import load_dotenv
 from typing import List
 import requests
@@ -10,7 +11,6 @@ import json
 import os
 
 load_dotenv()
-
 
 
 def index(request):
@@ -24,6 +24,7 @@ def index(request):
             btc_balance = btc(btc_address)
             eth_balance = eth(eth_address)
             b3_parsed = b3(b3_file)
+            print(btc_balance, eth_balance)
 
             ctx = {
                 'btc_balance': btc_balance,
@@ -45,21 +46,24 @@ HEADERS = {
 
 BASE_URL = "http://localhost:8000"
 
-def btc(address: str) -> str:
+def btc(address: str) -> BitcoinAddress:
     response = requests.get(f"{BASE_URL}/bitcoin/balance/{address}", headers=HEADERS)
     if response.status_code == 200:
         data = json.loads(response.json())
-        return data.get("balance")
+        balance = data.get("balance")
+        btc_balance = BitcoinAddress.objects.get_or_create(address=address, balance=balance)
+        return btc_balance
     return
 
-def eth(address: str) -> str:
+def eth(address: str) -> EthereumAddress:
     response = requests.get(f"{BASE_URL}/ethereum/balance/{address}", headers=HEADERS)
     if response.status_code == 200:
         data = json.loads(response.json())
-        return data.get("balance")
+        balance = data.get("balance")
+        eth_balance = EthereumAddress.objects.get_or_create(address=address, balance=balance)
+        return eth_balance
     return
 
-# deal with file input
 def b3(b3_file):
     files = {'file': b3_file}
     response = requests.post(f"{BASE_URL}/b3/parse", headers=HEADERS, files=files)
@@ -67,11 +71,3 @@ def b3(b3_file):
         data = json.loads(response.json())
         return data
     return
-
-# entire dashboard based on user's holdings
-def dashboard(request):
-    return
-
-def create_account(request):
-    return
-
