@@ -13,6 +13,48 @@ import os
 load_dotenv()
 
 
+def dashboard(request):
+    btc = BitcoinAddress.objects.all()
+    print(btc)
+    eth = EthereumAddress.objects.all()
+    print(eth)
+    stocks = Stock.objects.all()
+    total_value_stocks = 0
+    for stock in stocks:
+        total_value_stocks += stock.updated_value
+
+    fii = Fii.objects.all()
+    total_value_fii = 0
+    for f in fii:
+        total_value_fii += f.updated_value
+
+    print(fii)
+    total_value_treasury = 0
+    treasury = TreasuryDirect.objects.all()
+    print(treasury)
+    for title in treasury:
+        total_value_treasury += title.updated_value
+
+    print(treasury)
+
+    b3_parsed = {
+        "treasury_directs": treasury,
+        "total_value_treasury_directs": total_value_treasury,
+        "stocks": stocks,
+        "total_value_stocks": total_value_stocks,
+        "fiis": fii,
+        "total_value_fiis": total_value_fii
+    }
+
+    ctx = {
+        "eth_balance": eth,
+        "btc_balance": btc,
+        "b3_parsed": b3_parsed
+    }
+
+    return render(request, 'dashboard.html', ctx)
+
+
 def index(request):
     if request.method == 'POST':
         form = DashboardForm(request.POST, request.FILES)
@@ -21,8 +63,10 @@ def index(request):
             eth_address = form.cleaned_data['eth_address']
             b3_file = form.cleaned_data['b3_file']
 
-            btc_balance = btc(btc_address)
-            eth_balance = eth(eth_address)
+            # btc_balance = btc(btc_address)
+            # eth_balance = eth(eth_address)
+            btc_balance = 0
+            eth_balance = 0
             b3_parsed = b3(b3_file)
 
             ctx = {
@@ -99,5 +143,44 @@ def b3(b3_file):
                              headers=HEADERS, files=files)
     if response.status_code == 200:
         data = json.loads(response.json())
+
+        stocks = data.get("stocks")
+        fiis = data.get("fiis")
+        treasury_direct = data.get("treasury_directs")
+
+        for stock in stocks:
+            negotiation_code = stock.get("negotiation_code")
+            db_stock, created = Stock.objects.get_or_create(
+                negotiation_code=negotiation_code)
+
+            db_stock.quantity = stock.get("quantity")
+            db_stock.price = stock.get("last_price")
+            db_stock.updated_value = stock.get("updated_value")
+            db_stock.save()
+
+        for fii in fiis:
+            negotiation_code = fii.get("negotiation_code")
+            db_fii, created = Fii.objects.get_or_create(
+                negotiation_code=negotiation_code)
+
+            db_fii.quantity = fii.get("quantity")
+            db_fii.price = fii.get("last_price")
+            db_fii.updated_value = fii.get("updated_value")
+            db_fii.save()
+
+        for title in treasury_direct:
+            product = title.get("product")
+            db_title, created = TreasuryDirect.objects.get_or_create(
+                product=product)
+
+            db_title.indexer = title.get("indexer")
+            db_title.quantity = title.get("quantity")
+            db_title.deadline = title.get("deadline")
+            db_title.applied_value = title.get("applied_value")
+            db_title.brute_value = title.get("brute_value")
+            db_title.liquid_value = title.get("liquid_value")
+            db_title.updated_value = title.get("updated_value")
+            db_title.save()
+
         return data
     return
