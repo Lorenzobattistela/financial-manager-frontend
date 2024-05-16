@@ -20,7 +20,11 @@
             <tr>
                 <td>{{ item.negotiation_code }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.last_price }}</td>
+                {% if item.last_price %}
+                  <td>{{ item.last_price }}</td>
+                {% else %}
+                  <td>{{ item.price }}</td>
+                {% endif %}
                 <td>{{ item.updated_value }}</td>
             </tr>
 
@@ -42,7 +46,11 @@
                 {% for item in b3_parsed.fiis %}
 
                     <tr>
+                      {% if item.product %}
                         <td>{{ item.product }}</td>
+                      {% else %}
+                        <td>{{ item.negotiation_code }}</td>
+                      {% endif %}
                         <td>{{ item.updated_value }}</td>
                     </tr>
 
