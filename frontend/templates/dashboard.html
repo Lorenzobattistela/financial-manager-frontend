@@ -1,10 +1,79 @@
 {% extends 'base.html' %} {% block content %}
-<div class="bg-dark">
-  <h1 class="text-danger">{{btc_balance}}</h1>
-  <h1 class="text-danger">{{eth_balance}}</h1>
-  <h1 class="text-danger">{{b3_parsed}}</h1>
+<div class="container bg-dark">
+    <h1>FinManager - Dashboard</h1>
 
-  {% for item in b3_parsed %}
-  <h2 class="text-danger">{{item}}</h2>
+    <hr class="border border-3 opacity-75">
+
+    <table class="table table-striped table-hover table-bordered align-middle text-center">
+        <caption>Valor total investido em ações: {{ b3_parsed.total_value_stocks }}</caption>
+        <thead>
+        <tr>
+            <th scope="col">Papel</th>
+            <th scope="col">Quantidade</th>
+            <th scope="col">Última Cotação</th>
+            <th scope="col">Valor Atualizado</th>
+        </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for item in b3_parsed.stocks %}
+
+            <tr>
+                <td>{{ item.negotiation_code }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.last_price }}</td>
+                <td>{{ item.updated_value }}</td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="row">
+        <div class="col">
+            <table class="table table-striped table-hover table-bordered align-middle text-center">
+                <caption>Valor total em cotas de FII: {{ b3_parsed.total_value_fiis }}</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Fundo</th>
+                    <th scope="col">Valor Aplicado</th>
+                </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                {% for item in b3_parsed.fiis %}
+
+                    <tr>
+                        <td>{{ item.product }}</td>
+                        <td>{{ item.updated_value }}</td>
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <table class="table table-striped table-hover table-bordered align-middle text-center">
+                <caption>Valor total em títulos públicos: {{ b3_parsed.total_value_treasury_directs }}</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Título</th>
+                    <th scope="col">Vencimento</th>
+                    <th scope="col">Valor Aplicado</th>
+                </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                {% for item in b3_parsed.treasury_directs %}
+
+                    <tr>
+                        <td>{{ item.product }}</td>
+                        <td>{{ item.deadline }}</td>
+                        <td>{{ item.updated_value }}</td>
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
-{% endfor %} {% endblock %}
+{% endblock %}
