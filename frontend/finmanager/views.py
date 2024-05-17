@@ -14,9 +14,9 @@ load_dotenv()
 
 
 def dashboard(request):
-    btc = BitcoinAddress.objects.all()
+    btc = BitcoinAddress.objects.all()[0]
     print(btc)
-    eth = EthereumAddress.objects.all()
+    eth = EthereumAddress.objects.all()[0]
     print(eth)
     stocks = Stock.objects.all()
     total_value_stocks = 0
@@ -46,10 +46,22 @@ def dashboard(request):
         "total_value_fiis": total_value_fii
     }
 
+    balances = [
+        {"product": "Tesouro Direto", "balance": b3_parsed["total_value_treasury_directs"]},
+        {"product": "Ações", "balance": b3_parsed["total_value_stocks"]},
+        {"product": "Fundos Imobiliários", "balance": b3_parsed["total_value_fiis"]},
+        {"product": "Bitcoin", "balance": btc.brl_balance},
+        {"product": "Ethereum", "balance": eth.brl_balance}
+    ]
+
+    balances = [{k: str(v) for k, v in balance.items()} for balance in balances]
+    balances = json.dumps(balances)
+
     ctx = {
         "eth_balance": eth,
         "btc_balance": btc,
-        "b3_parsed": b3_parsed
+        "b3_parsed": b3_parsed,
+        "balances": balances
     }
 
     return render(request, 'dashboard.html', ctx)
@@ -63,10 +75,8 @@ def index(request):
             eth_address = form.cleaned_data['eth_address']
             b3_file = form.cleaned_data['b3_file']
 
-            # btc_balance = btc(btc_address)
-            # eth_balance = eth(eth_address)
-            btc_balance = 0
-            eth_balance = 0
+            btc_balance = btc(btc_address)
+            eth_balance = eth(eth_address)
             b3_parsed = b3(b3_file)
 
             ctx = {
@@ -120,10 +130,12 @@ def eth(address: str) -> EthereumAddress:
 
     eth_val = requests.get(f"{BASE_URL}/ethereum/brl-price", headers=HEADERS)
     eth_val_json = json.loads(eth_val.json())
+    print(eth_val_json)
     price = eth_val_json.get("price")
 
     if response.status_code == 200:
         data = json.loads(response.json())
+        print(data)
         balance = data.get("balance")
         eth_price = price * balance
 
