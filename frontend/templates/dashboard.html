@@ -1,5 +1,10 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container bg-dark">
+{% load static %}
+<script type="text/javascript">
+    const balances = JSON.parse('{{ balances|escapejs }}');
+</script>
+<script src="{% static 'amcharts.js' %}"></script>
+<div class="container bg-dark mt-5">
     <h1>FinManager - Dashboard</h1>
 
     <hr class="border border-3 opacity-75">
@@ -82,14 +87,11 @@
             </table>
         </div>
     </div>
-    <h1>{{ btc_balance.address }}</h1>
-    <h1>{{ btc_balance.brl_balance }}</h1>
-    <h1>{{ btc_balance.balance }}</h1>
 
-    <h1>{{ eth_balance.address }}</h1>
-    <h1>{{ eth_balance.brl_balance }}</h1>
-    <h1>{{ eth_balance.balance }}</h1>
+    <hr class="border border-3 opacity-75 mt-4">
+    <h2>Composição Patrimonial</h2>
 
+    <div id="chartdiv"></div>
 
 </div>
 {% endblock %}
